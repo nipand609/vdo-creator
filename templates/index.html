@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>Video Planner Pro</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f5f7;color:#1d1d1f;min-height:100vh;font-size:15px}
+.header{background:#fff;padding:14px 18px;border-bottom:1px solid #e5e5e7;position:sticky;top:0;z-index:100}
+.header h1{font-size:17px;font-weight:600}
+.header p{font-size:12px;color:#86868b;margin-top:1px}
+.steps{display:flex;gap:0;padding:0 18px;background:#fff;border-bottom:1px solid #e5e5e7;overflow-x:auto}
+.step-tab{padding:10px 14px;font-size:12px;font-weight:500;color:#86868b;border-bottom:2px solid transparent;white-space:nowrap;cursor:pointer}
+.step-tab.active{color:#007aff;border-bottom-color:#007aff}
+.page{display:none;padding:16px 18px;padding-bottom:90px;max-width:520px;margin:0 auto}
+.page.active{display:block}
+.sec-label{font-size:11px;font-weight:600;color:#86868b;letter-spacing:.06em;text-transform:uppercase;margin:16px 0 8px}
+.card{background:#fff;border-radius:14px;overflow:hidden;margin-bottom:12px}
+.upload-area{padding:18px;text-align:center;cursor:pointer;border:2px dashed #d2d2d7;border-radius:14px;background:#fff}
+.upload-area:active{background:#f5f5f7}
+.upload-area input{display:none}
+.upload-icon{width:36px;height:36px;background:#f0f0f5;border-radius:10px;margin:0 auto 8px;display:flex;align-items:center;justify-content:center}
+.upload-icon svg{width:18px;height:18px;stroke:#6e6e73;fill:none;stroke-width:1.8}
+.upload-title{font-size:13px;font-weight:500;color:#1d1d1f}
+.upload-hint{font-size:11px;color:#86868b;margin-top:2px}
+.clip-row{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid #f0f0f5}
+.clip-row:last-child{border-bottom:none}
+.clip-icon{width:38px;height:38px;border-radius:8px;background:#f0f0f5;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.clip-icon svg{width:16px;height:16px;stroke:#6e6e73;fill:none;stroke-width:1.8}
+.clip-meta{flex:1;min-width:0}
+.clip-name{font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.clip-dur{font-size:11px;color:#86868b;margin-top:1px}
+.tag-wrap{display:flex;gap:4px}
+.tag-btn{width:30px;height:26px;border-radius:7px;border:1.5px solid #d2d2d7;background:#fff;font-size:11px;font-weight:700;cursor:pointer;transition:all .15s;color:#86868b}
+.tag-btn.a-on{background:#e8f0fe;border-color:#4285f4;color:#1a73e8}
+.tag-btn.b-on{background:#e6f4ea;border-color:#34a853;color:#137333}
+.rm-btn{width:26px;height:26px;border-radius:50%;border:none;background:#fee2e2;color:#dc2626;font-size:13px;cursor:pointer;flex-shrink:0}
+.num-row{display:flex;align-items:center;gap:12px;padding:12px 14px}
+.num-row label{font-size:13px;flex:1}
+.num-row input[type=number]{width:56px;height:32px;text-align:center;border-radius:8px;border:1px solid #d2d2d7;font-size:14px;background:#fff}
+.num-row .val{font-size:15px;font-weight:600;color:#007aff;min-width:28px;text-align:right}
+input[type=range]{width:100%;accent-color:#007aff}
+.btn-primary{width:100%;padding:14px;border-radius:13px;background:#007aff;color:#fff;font-size:15px;font-weight:600;border:none;cursor:pointer;transition:opacity .15s}
+.btn-primary:disabled{opacity:.35;cursor:default}
+.btn-primary:not(:disabled):active{opacity:.8}
+.btn-secondary{width:100%;padding:12px;border-radius:13px;background:#fff;color:#007aff;font-size:14px;font-weight:500;border:1.5px solid #007aff;cursor:pointer;margin-top:8px}
+.output-card{background:#fff;border-radius:14px;overflow:hidden;margin-bottom:14px;border:1px solid #e5e5e7}
+.output-header{display:flex;align-items:center;gap:10px;padding:12px 14px;background:#f9f9fb;border-bottom:1px solid #f0f0f5}
+.output-num{width:28px;height:28px;border-radius:8px;background:#007aff;color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.output-title{font-size:14px;font-weight:500;flex:1}
+.seq-chips{display:flex;flex-wrap:wrap;gap:4px;padding:10px 14px;border-bottom:1px solid #f0f0f5}
+.chip{padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600}
+.chip.a{background:#e8f0fe;color:#1a73e8}
+.chip.b{background:#e6f4ea;color:#137333}
+.pair-row{display:flex;gap:8px;padding:10px 14px;align-items:center}
+.pair-label{font-size:12px;color:#86868b;width:40px;flex-shrink:0}
+.pair-upload{flex:1;padding:8px 10px;border-radius:10px;border:1.5px dashed #d2d2d7;background:#f9f9fb;text-align:center;cursor:pointer;font-size:12px;color:#86868b}
+.pair-upload.filled{border-style:solid;border-color:#34a853;background:#f0faf3;color:#137333;font-weight:500}
+.pair-upload input{display:none}
+.progress-wrap{background:#fff;border-radius:14px;padding:22px 18px;text-align:center;margin-bottom:12px}
+.prog-title{font-size:15px;font-weight:500;margin-bottom:14px}
+.prog-bar-bg{background:#f0f0f5;border-radius:20px;height:8px;overflow:hidden;margin-bottom:6px}
+.prog-bar{height:100%;background:#007aff;border-radius:20px;transition:width .4s}
+.prog-label{font-size:12px;color:#86868b;margin-bottom:16px}
+.dl-list{display:flex;flex-direction:column;gap:8px}
+.dl-item{display:flex;align-items:center;gap:10px;padding:10px 14px;background:#f9f9fb;border-radius:10px}
+.dl-num{width:24px;height:24px;border-radius:6px;background:#e6f4ea;color:#137333;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.dl-name{font-size:13px;flex:1}
+.dl-btn{padding:6px 14px;border-radius:8px;background:#007aff;color:#fff;font-size:12px;font-weight:600;text-decoration:none;white-space:nowrap}
+.dl-btn.err{background:#fee2e2;color:#dc2626}
+.bottom-bar{position:fixed;bottom:0;left:0;right:0;padding:12px 18px;background:#fff;border-top:1px solid #e5e5e7;z-index:100;max-width:520px;margin:0 auto}
+.tag-legend{display:flex;gap:14px;margin-bottom:10px}
+.leg{display:flex;align-items:center;gap:5px;font-size:12px;color:#86868b}
+.leg-dot{width:8px;height:8px;border-radius:50%}
+.leg-dot.a{background:#4285f4}
+.leg-dot.b{background:#34a853}
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>Video Planner Pro</h1>
+  <p>A/B roll · หลายคลิปพร้อมกัน · ปก+เสียงแยกแต่ละอัน</p>
+</div>
+<div class="steps">
+  <div class="step-tab active" onclick="goStep(0)">1 · คลิป</div>
+  <div class="step-tab" onclick="goStep(1)">2 · ตั้งค่า</div>
+  <div class="step-tab" onclick="goStep(2)">3 · ปก+เสียง</div>
+  <div class="step-tab" onclick="goStep(3)">4 · Render</div>
+</div>
+
+<!-- STEP 1: คลิป -->
+<div class="page active" id="page0">
+  <div class="sec-label">อัพโหลดคลิป <span id="clipCount" style="text-transform:none;letter-spacing:0;font-weight:400">(0 คลิป)</span></div>
+  <div class="upload-area" onclick="document.getElementById('clipIn').click()">
+    <input type="file" id="clipIn" accept="video/*" multiple onchange="uploadClips(this.files)">
+    <div class="upload-icon"><svg viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg></div>
+    <div class="upload-title">เพิ่มคลิปวิดีโอ</div>
+    <div class="upload-hint">สูงสุด 20 คลิป • MP4, MOV, AVI</div>
+  </div>
+  <div class="tag-legend" style="margin-top:10px">
+    <div class="leg"><div class="leg-dot a"></div>A = คลิปหลัก</div>
+    <div class="leg"><div class="leg-dot b"></div>B = คลิปเสริม</div>
+  </div>
+  <div class="card" style="margin-top:4px"><div id="clipList"><div style="padding:16px;text-align:center;font-size:13px;color:#86868b">ยังไม่มีคลิป</div></div></div>
+  <div class="bottom-bar"><button class="btn-primary" id="step1Btn" onclick="goStep(1)" disabled>ถัดไป · ตั้งค่า Output</button></div>
+</div>
+
+<!-- STEP 2: ตั้งค่า -->
+<div class="page" id="page1">
+  <div class="sec-label">จำนวน Output ที่ต้องการ</div>
+  <div class="card">
+    <div class="num-row">
+      <label>สร้างกี่วิดีโอ</label>
+      <input type="range" id="nOutputs" min="1" max="10" value="5" step="1" oninput="updateLabels()" style="flex:1">
+      <span class="val" id="nOutputsVal">5</span>
+    </div>
+    <div class="num-row" style="border-top:1px solid #f0f0f5">
+      <label>คลิปต่อวิดีโอ</label>
+      <input type="range" id="nClips" min="2" max="8" value="5" step="1" oninput="updateLabels()" style="flex:1">
+      <span class="val" id="nClipsVal">5</span>
+    </div>
+  </div>
+  <div class="sec-label">สรุป</div>
+  <div class="card">
+    <div class="num-row"><label>จำนวนวิดีโอที่ได้</label><span style="font-size:15px;font-weight:600;color:#007aff" id="sumOut">5 วิดีโอ</span></div>
+    <div class="num-row" style="border-top:1px solid #f0f0f5"><label>Pattern</label><span style="font-size:13px;color:#86868b">สุ่มอัตโนมัติ · ต่างกันทุกอัน</span></div>
+    <div class="num-row" style="border-top:1px solid #f0f0f5"><label>A-roll pool</label><span id="sumA" style="font-size:13px;color:#1a73e8">0 คลิป</span></div>
+    <div class="num-row" style="border-top:1px solid #f0f0f5"><label>B-roll pool</label><span id="sumB" style="font-size:13px;color:#137333">0 คลิป</span></div>
+  </div>
+  <div class="bottom-bar">
+    <button class="btn-primary" id="step2Btn" onclick="doPlan()">สุ่มลำดับ · ดูตัวอย่าง</button>
+  </div>
+</div>
+
+<!-- STEP 3: ปก+เสียง -->
+<div class="page" id="page2">
+  <div class="sec-label">จับคู่ปก+เสียงแต่ละวิดีโอ</div>
+  <div id="outputCards"></div>
+  <div class="bottom-bar">
+    <button class="btn-primary" id="step3Btn" onclick="startBatchRender()">Render ทั้งหมด</button>
+    <button class="btn-secondary" onclick="doPlan()">สุ่มลำดับใหม่ ↻</button>
+  </div>
+</div>
+
+<!-- STEP 4: Render -->
+<div class="page" id="page3">
+  <div class="progress-wrap">
+    <div class="prog-title" id="progTitle">กำลัง render...</div>
+    <div class="prog-bar-bg"><div class="prog-bar" id="progBar" style="width:0%"></div></div>
+    <div class="prog-label" id="progLabel">รอสักครู่...</div>
+  </div>
+  <div class="dl-list" id="dlList"></div>
+</div>
+
+<script>
+let clips=[], plan=[], covers={}, audios={};
+
+function goStep(i){
+  document.querySelectorAll('.page').forEach((p,j)=>{p.classList.toggle('active',j===i)});
+  document.querySelectorAll('.step-tab').forEach((t,j)=>{t.classList.toggle('active',j===i)});
+}
+
+function fmt(s){if(!s||isNaN(s))return'?s';return s>=60?Math.floor(s/60)+'m '+Math.round(s%60)+'s':Math.round(s)+'s'}
+
+async function uploadClips(files){
+  const arr=Array.from(files).slice(0,20-clips.length);
+  for(const f of arr){
+    const fd=new FormData(); fd.append('file',f);
+    const r=await fetch('/upload',{method:'POST',body:fd});
+    const d=await r.json();
+    clips.push({...d,tag:null,origName:f.name});
+  }
+  renderClips();
+}
+
+function setTag(i,t){clips[i].tag=clips[i].tag===t?null:t;renderClips()}
+function removeClip(i){clips.splice(i,1);renderClips()}
+
+function renderClips(){
+  document.getElementById('clipCount').textContent=`(${clips.length} คลิป)`;
+  const aOk=clips.some(c=>c.tag==='A'), bOk=clips.some(c=>c.tag==='B');
+  document.getElementById('step1Btn').disabled=!(aOk&&bOk);
+  document.getElementById('clipList').innerHTML=clips.length?clips.map((c,i)=>`
+    <div class="clip-row">
+      <div class="clip-icon"><svg viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg></div>
+      <div class="clip-meta">
+        <div class="clip-name">${c.origName}</div>
+        <div class="clip-dur">${fmt(c.duration)}</div>
+      </div>
+      <div class="tag-wrap">
+        <button class="tag-btn${c.tag==='A'?' a-on':''}" onclick="setTag(${i},'A')">A</button>
+        <button class="tag-btn${c.tag==='B'?' b-on':''}" onclick="setTag(${i},'B')">B</button>
+      </div>
+      <button class="rm-btn" onclick="removeClip(${i})">✕</button>
+    </div>`).join(''):`<div style="padding:16px;text-align:center;font-size:13px;color:#86868b">ยังไม่มีคลิป</div>`;
+  updateLabels();
+}
+
+function updateLabels(){
+  const n=parseInt(document.getElementById('nOutputs').value);
+  const c=parseInt(document.getElementById('nClips').value);
+  document.getElementById('nOutputsVal').textContent=n;
+  document.getElementById('nClipsVal').textContent=c;
+  document.getElementById('sumOut').textContent=n+' วิดีโอ';
+  document.getElementById('sumA').textContent=clips.filter(x=>x.tag==='A').length+' คลิป';
+  document.getElementById('sumB').textContent=clips.filter(x=>x.tag==='B').length+' คลิป';
+}
+
+async function doPlan(){
+  const a=clips.filter(c=>c.tag==='A');
+  const b=clips.filter(c=>c.tag==='B');
+  const n=parseInt(document.getElementById('nOutputs').value);
+  const cpv=parseInt(document.getElementById('nClips').value);
+  const r=await fetch('/plan',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({a_clips:a,b_clips:b,n_outputs:n,clips_per_output:cpv})});
+  const d=await r.json();
+  plan=d.sequences;
+  covers={}; audios={};
+  renderOutputCards();
+  goStep(2);
+}
+
+function renderOutputCards(){
+  document.getElementById('outputCards').innerHTML=plan.map((seq,i)=>`
+    <div class="output-card">
+      <div class="output-header">
+        <div class="output-num">${i+1}</div>
+        <div class="output-title">วิดีโอที่ ${i+1}</div>
+      </div>
+      <div class="seq-chips">
+        ${seq.map(c=>`<div class="chip ${c.role.toLowerCase()}">${c.role} · ${c.origName||c.filename}</div>`).join('')}
+      </div>
+      <div class="pair-row">
+        <span class="pair-label">ปก</span>
+        <div class="pair-upload ${covers[i]?'filled':''}" id="coverBox${i}" onclick="document.getElementById('coverIn${i}').click()">
+          <input type="file" id="coverIn${i}" accept="image/*" onchange="uploadCover(${i},this)" style="display:none">
+          ${covers[i]?'✓ '+covers[i].origName:'แตะเพื่อเลือกรูปปก'}
+        </div>
+      </div>
+      <div class="pair-row" style="border-top:1px solid #f0f0f5">
+        <span class="pair-label">เสียง</span>
+        <div class="pair-upload ${audios[i]?'filled':''}" id="audioBox${i}" onclick="document.getElementById('audioIn${i}').click()">
+          <input type="file" id="audioIn${i}" accept="audio/*" onchange="uploadAudio(${i},this)" style="display:none">
+          ${audios[i]?'✓ '+audios[i].origName:'แตะเพื่อเลือกไฟล์เสียง'}
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+async function uploadCover(i, inp){
+  const f=inp.files[0]; if(!f)return;
+  const fd=new FormData(); fd.append('file',f);
+  const r=await fetch('/upload',{method:'POST',body:fd});
+  covers[i]={...(await r.json()),origName:f.name};
+  renderOutputCards();
+}
+
+async function uploadAudio(i, inp){
+  const f=inp.files[0]; if(!f)return;
+  const fd=new FormData(); fd.append('file',f);
+  const r=await fetch('/upload',{method:'POST',body:fd});
+  audios[i]={...(await r.json()),origName:f.name};
+  renderOutputCards();
+}
+
+async function startBatchRender(){
+  goStep(3);
+  const outputs=plan.map((seq,i)=>({
+    clips:seq.map(c=>({id:c.id,ext:c.ext})),
+    cover:covers[i]||null,
+    audio:audios[i]||null,
+  }));
+  const r=await fetch('/render-batch',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({outputs})});
+  const {batch_id}=await r.json();
+
+  const poll=setInterval(async()=>{
+    const s=await(await fetch(`/status/${batch_id}`)).json();
+    const pct=s.progress||0;
+    document.getElementById('progBar').style.width=pct+'%';
+    document.getElementById('progTitle').textContent=s.status==='done'?'เสร็จทั้งหมด!':'กำลัง render...';
+    document.getElementById('progLabel').textContent=s.current_label||'รอสักครู่...';
+    if(s.results&&s.results.length){
+      document.getElementById('dlList').innerHTML=s.results.map(res=>`
+        <div class="dl-item">
+          <div class="dl-num">${res.index}</div>
+          <div class="dl-name">วิดีโอที่ ${res.index}</div>
+          ${res.status==='done'
+            ?`<a href="${res.url}" download="video_${res.index}.mp4" class="dl-btn">ดาวน์โหลด</a>`
+            :`<span class="dl-btn err">Error</span>`}
+        </div>`).join('');
+    }
+    if(s.status==='done') clearInterval(poll);
+  },1500);
+}
+</script>
+</body>
+</html>
